@@ -1,15 +1,8 @@
+from django.contrib import admin
 from django.urls import path
-from rest_framework import routers
-from django.conf.urls import include
-from .views import EnterpriseCreateList, EmployeeCreateList
-
-router = routers.DefaultRouter()
-router.register('enterprise_create', EnterpriseCreateList.as_view())
-router.register('employee_create', EmployeeCreateList.as_view())
+from .views import EnterpriseCreateList,EmployeeCreateList
 
 urlpatterns = [
-    path('',include(router.urls)),
-]
-
-# urlpatterns = router.urls
-
+    path('create_enterprise', EnterpriseCreateList.as_view()),
+    path('create_employee', EmployeeCreateList.as_view())
+] 
