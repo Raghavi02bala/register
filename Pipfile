@@ -12,6 +12,7 @@ psycopg2-binary = "*"
 djangorestframework = "*"
 django-filter = "*"
 markdown = "*"
+django-phonenumber-field = {extras = ["phonenumberslite"], version = "*"}
 
 [requires]
 python_version = "3.6"
