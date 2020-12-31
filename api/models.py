@@ -24,6 +24,7 @@ class Employee(models.Model):
     password = models.CharField(max_length=15)
     my_enterprise = models.ForeignKey('Enterprise', on_delete=models.CASCADE)
 
+
 class Purchase(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     my_series = models.CharField(max_length=50)
@@ -82,8 +83,8 @@ class VoucherItemRow(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     my_item = models.CharField(max_length=20)
     my_umo = models.CharField(max_length=20)
-    quantity = models.CharField(max_length=40)
-    price = models.CharField(max_length=10)
+    quantity = models.DecimalField(max_digits=40,decimal_places=5)
+    price = models.DecimalField(max_digits=10,decimal_places=5)
     lot_no = models.IntegerField()
     description = models.CharField(max_length=50)
     manufacturing_date = models.DateField()
@@ -98,14 +99,14 @@ class VoucherBillSundaryRow(models.Model):
     my_voucher_item = models.ForeignKey('VoucherItemRow',on_delete=models.CASCADE)
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     my_bill_sundry = models.CharField(max_length=30)
-    value = models.CharField(max_length=30)
+    value = models.DecimalField(max_digits=20,decimal_places=5)
     amount = models.DecimalField(max_digits=20,decimal_places=5)
     description = models.CharField(max_length=50)
 
 class SubItemRow(models.Model):
     my_voucher_item = models.ForeignKey('VoucherItemRow',on_delete=models.CASCADE)
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
-    quantity = models.CharField(max_length=30)
+    quantity = models.DecimalField(max_digits=20,decimal_places=5)
     serial_number = models.IntegerField()
     description = models.CharField(max_length=50)
 
