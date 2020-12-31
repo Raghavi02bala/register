@@ -90,8 +90,8 @@ class VoucherItemRowSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(default=uuid.uuid4)
     my_item = serializers.CharField(max_length=20)
     my_umo = serializers.CharField(max_length=20)
-    quantity = serializers.DecimalField(max_digits=20,decimal_places=5)
-    price = serializers.DecimalField(max_digits=20,decimal_places=5)
+    quantity = serializers.DecimalField(max_digits=20,decimal_places=5,min_value=0)
+    price = serializers.DecimalField(max_digits=20,decimal_places=5,min_value=0)
     lot_no = serializers.IntegerField()
     description = serializers.CharField(max_length=50)
     manufacturing_date = serializers.DateField()
@@ -114,10 +114,6 @@ class VoucherItemRowSerializer(serializers.ModelSerializer):
     def validate(self, data):
         purchase_data = self.context
         # print(purchase_data['my_currency'])
-        if data['quantity'] < 0:
-            raise serializers.ValidationError('Quantity should be greater than 0')
-        if data['price'] < 0:
-            raise serializers.ValidationError('Price should be greater than zero')
         if data['amount'] != data['price']*data['quantity']:
             raise serializers.ValidationError('Calculation mistake')
         if len(data['subitemrow_set']) > 0:
@@ -152,6 +148,11 @@ class VoucherItemRowSerializer(serializers.ModelSerializer):
                 return data
             else:
                 raise serializers.ValidationError('Taxable amount is wrong')
+        if data['taxable_amount']:
+            if data['final_amount'] == data['taxable_amount'] * 1.18:
+                return data
+            else:
+                raise serializers.ValidationError('Final Amount is the sum of Taxable Amount and 18% Tax')  
         return data
 #####################################################################################
 
@@ -197,11 +198,20 @@ class  PurchaseSerializer(serializers.ModelSerializer):
         'gst_nature_of_transaction', 'is_cancelled', 'amount', 'party_bill_number', 'party_bill_date',
         'tax_scope', 'my_account', 'my_center', 'voucheritemrow_set']  
 
-    def create(self, validated_data):
-        return Purchase()
-    def validate(self,data):
-        # print(data)
+    def validate(self, data):
+        if len(data['voucheritemrow_set']) > 0:
+            def funct(v):
+                return v['final_amount']
+
+            t = map(funct, data['voucheritemrow_set'])
+            s = sum(t)
+            if data['amount'] != s:
+                raise serializers.ValidationError('Amount should be sum of all the amount')
         return data
+        
+    def create(self, validated_data):
+        print(validated_data)
+        return Purchase()
 
         
 
