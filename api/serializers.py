@@ -54,7 +54,6 @@ class Employee_Serializer(serializers.ModelSerializer):
 
 
 class VoucherBillSundaryRowSerializer(serializers.ModelSerializer):
-    my_voucher_item = serializers.PrimaryKeyRelatedField(queryset=VoucherItemRow.objects.all())
     id = serializers.UUIDField(default=uuid.uuid4)
     my_bill_sundry = serializers.CharField(max_length=30)
     value = serializers.DecimalField(max_digits=20,decimal_places=5)
@@ -113,8 +112,8 @@ class VoucherItemRowSerializer(serializers.ModelSerializer):
         'subitemrow_set']
 
     def validate(self, data):
-        print(self.context['tax_scope'])
-        # print(data)
+        purchase_data = self.context
+        # print(purchase_data['my_currency'])
         if data['quantity'] < 0:
             raise serializers.ValidationError('Quantity should be greater than 0')
         if data['price'] < 0:
@@ -134,6 +133,25 @@ class VoucherItemRowSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Quantity should be sum of all sub item row Quantity')
         if data['expiry_date'] <= data['manufacturing_date']:
             raise serializers.ValidationError('Expiry data should be greater than Manufacturing date')
+        if purchase_data['tax_scope'] == 0:
+            if data['amount'] != data['effective_amount']:
+                raise serializers.ValidationError('Effective amount should be same as Amount')
+        if purchase_data['tax_scope'] == 1:
+            # print(round((((data['amount'])/(100+18))*100),2))
+            if data['effective_amount'] == round((((data['amount'])/(100+18))*100),2):
+                return data
+            else:
+                raise serializers.ValidationError('The Effective Amount entered is wrong')
+        if len(data['voucherbillsundaryrow_set']) > 0:
+            def myfun(b):
+                return b['amount']
+
+            d = map(myfun, data['voucherbillsundaryrow_set'])
+            r = sum(d)
+            if data['taxable_amount'] == data['effective_amount'] + r:
+                return data
+            else:
+                raise serializers.ValidationError('Taxable amount is wrong')
         return data
 #####################################################################################
 
