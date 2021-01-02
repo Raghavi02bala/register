@@ -154,6 +154,7 @@ class VoucherItemRowSerializer(serializers.ModelSerializer):
             else:
                 raise serializers.ValidationError('Final Amount is the sum of Taxable Amount and 18% Tax')  
         return data
+
 #####################################################################################
 
 
@@ -210,11 +211,24 @@ class  PurchaseSerializer(serializers.ModelSerializer):
         return data
         
     def create(self, validated_data):
-        print(validated_data)
-        return Purchase()
+        voucheritemrowset_data = validated_data.pop('voucheritemrow_set')
+        purchase_instance = Purchase.objects.create(**validated_data)
+        print(voucheritemrowset_data)
+        for v in voucheritemrowset_data:
+            voucherbillsundaryrowset_data = v.pop('voucherbillsundaryrow_set')
+            subitemrowset_data = v.pop('subitemrow_set')
+            vir_instance = VoucherItemRow.objects.create(my_purchase_id=purchase_instance.id, **v)
+            for s in subitemrowset_data:
+                SubItemRow.objects.create(my_voucher_item_id=vir_instance.id,**s)
+            for b in voucherbillsundaryrowset_data:
+                VoucherBillSundaryRow.objects.create(my_voucher_item_id=vir_instance.id,**b)        
+        return purchase_instance
+        
+    # def update(self, instance, validated_data):
+        
 
         
 
    
   
-############################################################################################
+

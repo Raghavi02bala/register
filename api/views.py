@@ -35,4 +35,12 @@ class Purchase_CreateList(generics.CreateAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     def get_serializer_context(self):
-        return self.request.data 
+        return self.request.data
+
+class Purchase_List(generics.ListAPIView):
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer 
+
+class Purchase_Urd(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer
